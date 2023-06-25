@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enthalpy.model.dao.LikeDao">
+<delete id="deleteLike" parameterType="Like">
+	DELETE FROM liked WHERE boardId = #{boardId} AND userId = #{userId}
+</delete>
+
+<insert id="insertLike" parameterType="Like">
+	INSERT INTO liked VALUES(#{userId}, #{boardId})
+</insert>
+
+<select id="selectLike" parameterType="Like" resultType="int">
+	SELECT COUNT(*) FROM liked WHERE boardId = #{boardId} AND userId = #{userId}
+</select>
+</mapper>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enthalpy.model.dao.BoardDao">
+	<select id="selectAll" resultType="Board">
+		SELECT b.id id, b.title title, u.nickname writer, b.userId userId, b.regDate regDate, b.modifiedDate modifiedDate, b.activity_id activity_id, m.activity activity, b.duration duration, b.contents contents, b.img img, b.viewCnt viewCnt, b.likeCnt likeCnt
+		FROM board b, user u, MET m
+		WHERE b.userId=u.id  AND m.id = b.activity_id;
+	</select>
+	<select id="selectOne" parameterType="int" resultType="Board">
+		SELECT b.id id, b.title title, u.nickname writer, b.userId userId, b.regDate regDate, b.modifiedDate modifiedDate, b.activity_id activity_id, m.activity activity, b.duration duration, b.contents contents, b.img img, b.viewCnt viewCnt, b.likeCnt likeCnt
+		FROM board b, user u, MET m
+		WHERE b.id=#{id} AND b.userId=u.id AND m.id = b.activity_id;
+	</select>
+	<insert id="insertBoard" parameterType="Board">
+		INSERT INTO board (title, userId, 
+		activity_id, duration, contents, img)
+		VALUES (#{title}, #{userId}, 
+		#{activity_id}, #{duration}, #{contents}, #{img});
+	</insert>
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM board
+		WHERE
+		id=#{id};
+	</delete>
+	<update id="updateBoard" parameterType="Board">
+		UPDATE BOARD
+		SET title=#{title}, modifiedDate=now(), contents=#{contents}, img=#{img}
+		WHERE id=#{id};
+	</update>
+	<update id="updateBoardNotImg" parameterType="Board">
+		UPDATE BOARD
+		SET title=#{title}, modifiedDate=now(), contents=#{contents}
+		WHERE id=#{id};
+	</update>
+	<update id="updateViewCnt" parameterType="int">
+		UPDATE BOARD
+		SET
+		viewCnt= viewCnt + 1
+		WHERE id=#{id};
+	</update>
+	<update id="deleteViewCnt" parameterType="int">
+		UPDATE BOARD
+		SET
+		viewCnt= viewCnt - 1
+		WHERE id=#{id};
+	</update>
+	<select id="search" resultType="Board"
+		parameterType="SearchCondition">
+		<if test="key=='activity'">
+		SELECT b.id id, b.title title, u.nickname writer, b.userId userId, b.regDate regDate, b.modifiedDate modifiedDate, b.activity_id activity_id, m.activity activity, b.duration duration, b.contents contents, b.img img, b.viewCnt viewCnt, b.likeCnt likeCnt
+		FROM board b, user u, MET M
+		WHERE b.userId=u.id AND m.id = b.activity_id AND m.activity LIKE '%${word}%'
+		<if test="orderBy!='none'">
+			ORDER BY ${orderBy} ${orderByDir}
+		</if>
+		</if>
+		<if test="key!='activity'">
+		SELECT b.id id, b.title title, u.nickname writer, b.userId userId, b.regDate regDate, b.modifiedDate modifiedDate, b.activity_id activity_id, m.activity activity, b.duration duration, b.contents contents, b.img img, b.viewCnt viewCnt, b.likeCnt likeCnt
+		FROM board b, user u, MET M
+		WHERE b.userId=u.id AND m.id = b.activity_id
+		<if test="key!='none'">
+			AND b.${key} LIKE concat('%', #{word}, '%')
+		</if>
+		<if test="orderBy!='none'">
+			ORDER BY ${orderBy} ${orderByDir}
+		</if>
+		</if>
+	</select>
+	<select id="searchById" resultType="Board" parameterType="SearchCondition">
+		SELECT b.id id, b.title title, u.nickname writer, b.userId userId, b.regDate regDate, b.modifiedDate modifiedDate, b.activity_id activity_id, m.activity activity, b.duration duration, b.contents contents, b.img img, b.viewCnt viewCnt, b.likeCnt likeCnt
+		FROM board b, user u, MET M
+		WHERE b.userId=u.id AND m.id = b.activity_id AND u.id=#{key} ORDER BY regDate ASC;
+	</select>
+	<update id="addLikeCnt" parameterType="int">
+		UPDATE BOARD
+		SET
+		likeCnt=likeCnt+1
+		WHERE id=#{id}
+	</update>
+	<update id="delLikeCnt" parameterType="int">
+		UPDATE BOARD
+		SET
+		likeCnt=likeCnt-1
+		WHERE id=#{id}
+	</update>
+	<select id="getLastInsertedId" resultType="int">
+    	SELECT LAST_INSERT_ID();
+	</select>
+	
+</mapper>

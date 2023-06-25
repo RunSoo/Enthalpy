@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enthalpy.model.dao.DailyCalDao">
+	<select id="selectAll" parameterType="String" resultType="DailyCal">
+		SELECT calories, DATE_FORMAT(regDate, '%Y-%c-%e') AS regDate
+		FROM dailyCal
+		WHERE userId=#{userId};
+	</select>
+	<select id="selectDailyCal" parameterType="DailyCal" resultType="int">
+		SELECT COUNT(*) FROM dailyCal WHERE userId = #{userId} AND DATE(regDate) = CURDATE() AND calories != 0;
+	</select>
+	<insert id="insertDailyCal" parameterType="DailyCal">
+		INSERT INTO dailyCal (userId, regDate, calories)
+		VALUES (
+			#{userId}, CURDATE(), (
+			SELECT #{duration} * 0.35 * u.weight * m.value10 / 200
+			FROM user u, MET m
+			WHERE u.id = #{userId} AND m.id = #{activity_id})
+		);
+	</insert>
+	<update id="updateDailyCal" parameterType="DailyCal">
+		UPDATE dailyCal
+		SET calories=calories+(
+			SELECT #{duration} * 0.35 * u.weight * m.value10 / 200
+			FROM user u, MET m
+			WHERE u.id = #{userId} AND m.id = #{activity_id})
+		WHERE userId=#{userId} AND regDate=CURDATE();
+	</update>
+	<update id="subtractDailyCal" parameterType="DailyCal">
+		UPDATE dailyCal
+		SET calories=calories-(
+			SELECT #{duration} * 0.35 * u.weight * m.value10/200
+			FROM user u, MET m
+			WHERE u.id = #{userId} AND m.id = #{activity_id})
+		WHERE userId=#{userId} AND DATE(regDate) = DATE(#{regDate});
+	</update>
+	<delete id="delDailyCal" parameterType="DailyCal">
+		DELETE FROM dailyCal WHERE userId = #{userId} AND DATE(regDate) = DATE(#{regDate}) AND calories &lt;= 0;
+	</delete>
+	<select id="selectMonthlyDailyCal" parameterType="DailyCal" resultType="int">
+		SELECT SUM(calories) FROM dailyCal WHERE userId = #{userId} AND MONTH(regDate) = MONTH(#{regDate});
+	</select>
+	
+</mapper>
